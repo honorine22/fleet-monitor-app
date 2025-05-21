@@ -44,9 +44,17 @@ A Flutter-based fleet monitoring application that displays real-time locations o
 ```bash
 flutter pub get
 
+---
 ### Run App
 
 ```bash
 flutter run
+
+### Demo Video
+
+Click the image below to watch the demo video:
+
+[![Watch the video](https://img.youtube.com/vi/F1fXBSJOuNk/maxresdefault.jpg)](https://youtu.be/F1fXBSJOuNk)
+
 
 
