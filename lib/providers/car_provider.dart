@@ -1,104 +1,83 @@
 import 'dart:async';
-import 'package:fleet_app_monitor/core/constants.dart';
-import 'package:fleet_app_monitor/models/hive_car_model.dart';
+import 'package:fleet_app_monitor/providers/car_api_service.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:hive/hive.dart';
 import '../models/car_model.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
 
-final carProvider = StateNotifierProvider<CarNotifier, List<CarModel>>(
-  (ref) => CarNotifier(ref),
-);
+final carProvider = StateNotifierProvider<CarNotifier, List<CarModel>>((ref) {
+  return CarNotifier();
+});
 
 class CarNotifier extends StateNotifier<List<CarModel>> {
-  final Ref ref;
-  Timer? _pollingTimer;
+  Timer? _timer;
+  Timer? _trackingTimer;
+  String? _currentlyTrackingId;
+
+  CarNotifier() : super([]) {
+    _loadFromCache();
+  }
 
   Future<void> _loadFromCache() async {
-    final box = Hive.box<HiveCarModel>('cars');
-    final cachedCars =
-        box.values.map((hiveCar) => hiveCar.toCarModel()).toList();
-    state = cachedCars;
+    final box = await Hive.openBox<CarModel>('carsBox');
+    state = box.values.toList();
   }
 
-  CarNotifier(this.ref) : super([]) {
-    _loadFromCache(); //  load cached cars first
-    _fetchCars(); // then fetch fresh
-    _startPolling();
+  void startFetchingCars() {
+    _timer?.cancel();
+    _timer = Timer.periodic(const Duration(seconds: 5), (_) => _fetchCars());
   }
 
-  final carListStreamProvider = StreamProvider<List<CarModel>>((ref) async* {
-    while (true) {
-      try {
-        final response = await http.get(
-          Uri.parse(AppConstants.mockApiEndpoint),
+  bool isTracking(String carId) => _currentlyTrackingId == carId;
+
+  void startTrackingCar(String carId) {
+    _currentlyTrackingId = carId;
+
+    _trackingTimer?.cancel();
+    _trackingTimer = Timer.periodic(const Duration(seconds: 2), (timer) {
+      final index = state.indexWhere((car) => car.id == carId);
+      if (index != -1) {
+        final currentCar = state[index];
+
+        // Simulate updated position (in real app, fetch from backend)
+        final updatedCar = currentCar.copyWith(
+          latitude: currentCar.latitude + 0.0001,
+          longitude: currentCar.longitude + 0.0001,
+          route: [
+            ...currentCar.route,
+            LatLng(currentCar.latitude + 0.0001, currentCar.longitude + 0.0001),
+          ],
         );
-        if (response.statusCode == 200) {
-          final List data = jsonDecode(response.body);
-          final cars =
-              data.map((e) => CarModel.fromJson(e)).toList().cast<CarModel>();
-          yield cars;
-        } else {
-          yield [];
-        }
-      } catch (e) {
-        yield [];
+
+        // Create new list with updated car to trigger UI update
+        final updatedCars = [...state];
+        updatedCars[index] = updatedCar;
+        state = updatedCars;
       }
-      await Future.delayed(Duration(seconds: 5)); // polling every 5s
-    }
-  });
+    });
+  }
+
+  void stopTracking() {
+    _currentlyTrackingId = null;
+    _trackingTimer?.cancel();
+    _trackingTimer = null;
+  }
 
   Future<void> _fetchCars() async {
-    try {
-      final response = await http.get(Uri.parse(AppConstants.mockApiEndpoint));
-      if (response.statusCode == 200) {
-        final List<dynamic> data = json.decode(response.body);
-        final updatedCars =
-            data.map((json) {
-              final newCar = CarModel.fromJson(json);
-              final oldCar = state.firstWhere(
-                (c) => c.id == newCar.id,
-                orElse: () => newCar,
-              );
-              return oldCar.copyWithUpdatedLocation(
-                newCar.latitude,
-                newCar.longitude,
-                newCar.lastUpdated,
-              );
-            }).toList();
+    final updatedList = await CarApiService.fetchCars();
+    final box = await Hive.openBox<CarModel>('carsBox');
 
-        state = updatedCars;
-
-        // Persist to Hive
-        final box = Hive.box<HiveCarModel>('cars');
-        for (var car in updatedCars) {
-          box.put(car.id, HiveCarModel.fromCarModel(car));
-        }
-      }
-    } catch (_) {
-      // ignore
+    await box.clear();
+    for (final car in updatedList) {
+      await box.put(car.id, car);
     }
-  }
 
-  void _startPolling() {
-    _pollingTimer = Timer.periodic(const Duration(seconds: 5), (_) async {
-      await _fetchCars();
-    });
+    state = updatedList;
   }
 
   @override
   void dispose() {
-    _pollingTimer?.cancel();
+    _timer?.cancel();
     super.dispose();
-  }
-
-  // Helper: get a single car by id
-  CarModel? getCarById(String id) {
-    try {
-      return state.firstWhere((c) => c.id == id);
-    } catch (e) {
-      return null;
-    }
   }
 }

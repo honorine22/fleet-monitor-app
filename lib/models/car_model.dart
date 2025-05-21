@@ -1,15 +1,32 @@
+import 'package:hive/hive.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
-class CarModel {
+part 'car_model.g.dart';
+
+@HiveType(typeId: 0)
+class CarModel extends HiveObject {
+  @HiveField(0)
   final String id;
+
+  @HiveField(1)
   final String name;
+
+  @HiveField(2)
   final double latitude;
+
+  @HiveField(3)
   final double longitude;
+
+  @HiveField(4)
   final double speed;
+
+  @HiveField(5)
   final String status;
+
+  @HiveField(6)
   final DateTime lastUpdated;
 
-  List<LatLng> route; // ← NEW
+  List<LatLng> route;
 
   CarModel({
     required this.id,
@@ -38,26 +55,27 @@ class CarModel {
     );
   }
 
-  CarModel copyWithUpdatedLocation(
-    double lat,
-    double lng,
-    DateTime lastUpdate,
-  ) {
+  CarModel copyWith({
+    String? id,
+    String? name,
+    double? latitude,
+    double? longitude,
+    double? speed,
+    String? status,
+    DateTime? lastUpdated,
+    List<LatLng>? route,
+  }) {
     return CarModel(
-      id: id,
-      name: name,
-      latitude: lat,
-      longitude: lng,
-      speed: speed,
-      status: status,
-      lastUpdated: lastUpdate,
-      route: [...route, LatLng(lat, lng)], // Add new position to route
+      id: id ?? this.id,
+      name: name ?? this.name,
+      latitude: latitude ?? this.latitude,
+      longitude: longitude ?? this.longitude,
+      speed: speed ?? this.speed,
+      status: status ?? this.status,
+      lastUpdated: lastUpdated ?? this.lastUpdated,
+      route: route ?? this.route,
     );
   }
 }
 
-enum CarFilter {
-  all,
-  moving,
-  parked,
-}
+enum CarFilter { all, moving, parked }
