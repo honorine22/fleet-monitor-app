@@ -1,65 +1,46 @@
-# Fleet Monitoring App
+# 🚗 Fleet Monitor App
 
-A Flutter-based fleet monitoring application that displays real-time locations of cars on a Google Map with support for tracking, filtering by status, and detailed car views.
+[![Watch the demo video](https://img.youtube.com/vi/F1fXBSJOuNk/hqdefault.jpg)](https://youtu.be/F1fXBSJOuNk)
 
----
-
-## Features
-
-- **Real-time car location updates** simulated via polling every few seconds.
-- **Google Maps integration** to show car markers dynamically.
-- **Marker InfoWindows** display the car's name and allow navigation to a detailed screen.
-- **Track/Stop tracking** individual cars to follow their movement live on the map.
-- **Filtering cars** by status: All, Moving, or Parked.
-- **Search functionality** to filter cars by their status.
-- **Persistent caching** of car data using Hive.
-- Responsive UI with smooth map animations and camera adjustment to car locations.
+A real-time fleet monitoring mobile app built with **Flutter**, **Google Maps**, and **Firebase**. Track and manage vehicle locations with smooth animations, live updates, and offline support.
 
 ---
 
-## Screens
+## 📸 Screenshots
 
-- **Home Screen**: Map view with all cars shown as markers. Search and filter by car status. Tap marker to view details.
-- **Car Detail Screen**: Displays detailed info about a selected car and allows start/stop tracking.
+### Home Map View  
+![Home View](WhatsApp%20Video%202025-05-22%20at%2000.41.36_4aa82dab-0.jpg)
+
+### Car Detail View  
+![Detail View](WhatsApp%20Video%202025-05-22%20at%2000.41.36_4aa82dab-1.jpg)
+
+### Tracking Car  
+![Tracking](WhatsApp%20Video%202025-05-22%20at%2000.41.36_4aa82dab-2.jpg)
 
 ---
 
-## Getting Started
+## 🚀 Features
+
+- 📍 **Real-time vehicle location** with Firebase and Google Maps
+- 📈 **Track individual cars** with animated marker movement
+- 🌐 **Offline fallback** using cached data
+- 🔍 **Search and filter** cars by name or status
+- 🧑‍💻 **Riverpod** for clean, reactive state management
+- 🛠️ Modular and extensible architecture
+
+---
+
+## 🛠️ Getting Started
 
 ### Prerequisites
 
-- Flutter SDK installed (tested on Flutter 3.x+)
-- Google Maps API key configured in your `android` and `iOS` project files.
-- Backend API or mocked service providing car data with the following fields at minimum:
-  - `id`
-  - `name`
-  - `latitude`
-  - `longitude`
-  - `status` (e.g., "Moving", "Parked")
+- [Flutter](https://flutter.dev/docs/get-started/install)
+- Firebase Project with Firestore
+- Google Maps API Key
 
----
-
-### Install Dependencies
+### Installation
 
 ```bash
+git clone https://github.com/honorine22/fleet-monitor-app.git
+cd fleet-monitor-app
 flutter pub get
-
----
-### Run App
-
-```bash
-flutter run
-
-# Fleet Monitoring App 🚗🛰️
-
-This is a Flutter-based real-time fleet monitoring app with Google Maps, Firebase, and animations.
-
-## 📺 Demo Video
-
-[![Watch the video](https://img.youtube.com/vi/F1fXBSJOuNk/hqdefault.jpg)](https://youtu.be/F1fXBSJOuNk)
-
-Click the image above or [watch on YouTube](https://youtu.be/F1fXBSJOuNk).
-
----
-
-
