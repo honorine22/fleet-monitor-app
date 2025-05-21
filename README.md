@@ -50,11 +50,16 @@ flutter pub get
 ```bash
 flutter run
 
-### Demo Video
+# Fleet Monitoring App 🚗🛰️
 
-Click the image below to watch the demo video:
+This is a Flutter-based real-time fleet monitoring app with Google Maps, Firebase, and animations.
 
-[![Watch the video](https://img.youtube.com/vi/F1fXBSJOuNk/maxresdefault.jpg)](https://youtu.be/F1fXBSJOuNk)
+## 📺 Demo Video
 
+[![Watch the video](https://img.youtube.com/vi/F1fXBSJOuNk/hqdefault.jpg)](https://youtu.be/F1fXBSJOuNk)
+
+Click the image above or [watch on YouTube](https://youtu.be/F1fXBSJOuNk).
+
+---
 
 
