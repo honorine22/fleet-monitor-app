@@ -1,24 +1,52 @@
 # Fleet Monitoring App
 
-A Flutter-based real-time fleet monitoring application featuring live car locations on Google Maps with search and filter capabilities.
+A Flutter-based fleet monitoring application that displays real-time locations of cars on a Google Map with support for tracking, filtering by status, and detailed car views.
+
+---
 
 ## Features
 
-- **Live Map View**: Displays car locations with markers on Google Maps.
-- **Search Functionality**: Search cars by name or status (e.g., Moving, Parked).
-- **Status Filter**: Filter cars by their status using chips (All, Moving, Parked).
-- **Car Detail Screen**: Tap on car markers to view detailed information.
-- **Auto Camera Adjustment**: The map camera automatically fits bounds of visible cars based on current search and filters.
-- **Tracking Highlight**: The tracked car marker is highlighted in blue.
+- **Real-time car location updates** simulated via polling every few seconds.
+- **Google Maps integration** to show car markers dynamically.
+- **Marker InfoWindows** display the car's name and allow navigation to a detailed screen.
+- **Track/Stop tracking** individual cars to follow their movement live on the map.
+- **Filtering cars** by status: All, Moving, or Parked.
+- **Search functionality** to filter cars by their status.
+- **Persistent caching** of car data using Hive.
+- Responsive UI with smooth map animations and camera adjustment to car locations.
 
-## How to Run the App
+---
 
-1. **Prerequisites**:  
-   - Flutter SDK installed (version >= 3.0 recommended)  
-   - An Android/iOS emulator or physical device connected  
-   - Google Maps API key configured for both Android and iOS (replace in `android/app/src/main/AndroidManifest.xml` and `ios/Runner/AppDelegate.swift` or Info.plist)  
-   
-2. **Clone the Repository**  
-   ```bash
-   git clone https://github.com/your-username/fleet-monitoring-app.git
-   cd fleet-monitoring-app
+## Screens
+
+- **Home Screen**: Map view with all cars shown as markers. Search and filter by car status. Tap marker to view details.
+- **Car Detail Screen**: Displays detailed info about a selected car and allows start/stop tracking.
+
+---
+
+## Getting Started
+
+### Prerequisites
+
+- Flutter SDK installed (tested on Flutter 3.x+)
+- Google Maps API key configured in your `android` and `iOS` project files.
+- Backend API or mocked service providing car data with the following fields at minimum:
+  - `id`
+  - `name`
+  - `latitude`
+  - `longitude`
+  - `status` (e.g., "Moving", "Parked")
+
+---
+
+### Install Dependencies
+
+```bash
+flutter pub get
+
+### Run App
+
+```bash
+flutter run
+
+

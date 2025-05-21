@@ -25,9 +25,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    // Start fetching cars after first frame
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(carProvider.notifier).startFetchingCars();
+      ref
+          .read(carProvider.notifier)
+          .startFetchingCars(); // Fetch from API after build
     });
   }
 
@@ -37,7 +38,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     super.dispose();
   }
 
-  // Filters cars by search query and status filter
   List<CarModel> _filterCars(List<CarModel> cars) {
     var filtered = cars;
 
@@ -65,10 +65,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 .toList();
         break;
       case CarFilter.all:
-      default:
-        // No filter applied
         break;
     }
+
     return filtered;
   }
 
@@ -97,7 +96,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         CameraUpdate.newLatLngBounds(bounds, 50),
       );
     } catch (e) {
-      // Ignore errors if map not ready yet
+      // Ignore if map not ready
     }
   }
 
@@ -187,7 +186,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         ),
         onMapCreated: (controller) async {
           _mapController = controller;
-          await _fitBoundsToCars(filteredCars);
+          await _fitBoundsToCars(filteredCars); // Fit on map after creation
         },
         markers:
             filteredCars.map((car) {

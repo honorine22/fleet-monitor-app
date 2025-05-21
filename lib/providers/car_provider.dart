@@ -39,17 +39,15 @@ class CarNotifier extends StateNotifier<List<CarModel>> {
       if (index != -1) {
         final currentCar = state[index];
 
-        // Simulate updated position (in real app, fetch from backend)
+        final newLat = currentCar.latitude + 0.0001;
+        final newLng = currentCar.longitude + 0.0001;
+
         final updatedCar = currentCar.copyWith(
-          latitude: currentCar.latitude + 0.0001,
-          longitude: currentCar.longitude + 0.0001,
-          route: [
-            ...currentCar.route,
-            LatLng(currentCar.latitude + 0.0001, currentCar.longitude + 0.0001),
-          ],
+          latitude: newLat,
+          longitude: newLng,
+          route: [...currentCar.route, LatLng(newLat, newLng)],
         );
 
-        // Create new list with updated car to trigger UI update
         final updatedCars = [...state];
         updatedCars[index] = updatedCar;
         state = updatedCars;
@@ -66,6 +64,30 @@ class CarNotifier extends StateNotifier<List<CarModel>> {
   Future<void> _fetchCars() async {
     final updatedList = await CarApiService.fetchCars();
     final box = await Hive.openBox<CarModel>('carsBox');
+
+    // Track route only for the currently tracking car
+    if (_currentlyTrackingId != null) {
+      final Map<String, CarModel> currentMap = {
+        for (var car in state) car.id: car,
+      };
+
+      for (int i = 0; i < updatedList.length; i++) {
+        final fetchedCar = updatedList[i];
+        final existingCar = currentMap[fetchedCar.id];
+
+        if (fetchedCar.id == _currentlyTrackingId && existingCar != null) {
+          if (fetchedCar.latitude != existingCar.latitude ||
+              fetchedCar.longitude != existingCar.longitude) {
+            fetchedCar.route = [
+              ...existingCar.route,
+              LatLng(fetchedCar.latitude, fetchedCar.longitude),
+            ];
+          } else {
+            fetchedCar.route = existingCar.route;
+          }
+        }
+      }
+    }
 
     await box.clear();
     for (final car in updatedList) {

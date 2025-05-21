@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -15,9 +16,14 @@ class CarDetailScreen extends ConsumerStatefulWidget {
 class _CarDetailScreenState extends ConsumerState<CarDetailScreen> {
   GoogleMapController? _mapController;
 
+  LatLng? _currentMarkerPosition;
+  Timer? _animationTimer;
+  Marker? _animatedMarker;
+
   @override
   void dispose() {
     _mapController?.dispose();
+    _animationTimer?.cancel();
     super.dispose();
   }
 
@@ -25,6 +31,58 @@ class _CarDetailScreenState extends ConsumerState<CarDetailScreen> {
     if (_mapController != null) {
       _mapController!.animateCamera(CameraUpdate.newLatLng(position));
     }
+  }
+
+  // Linear interpolation between two LatLng points
+  LatLng _interpolatePosition(LatLng start, LatLng end, double t) {
+    return LatLng(
+      start.latitude + (end.latitude - start.latitude) * t,
+      start.longitude + (end.longitude - start.longitude) * t,
+    );
+  }
+
+  // Optional easing function for smoother animation
+  double _easeInOut(double t) {
+    return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
+  }
+
+  // Animate the marker position smoothly
+  void _animateMarkerTo(LatLng target) {
+    _animationTimer?.cancel();
+
+    const int totalSteps = 30;
+    const Duration stepDuration = Duration(milliseconds: 30);
+
+    if (_currentMarkerPosition == null) {
+      _currentMarkerPosition = target;
+    }
+
+    int step = 0;
+    _animationTimer = Timer.periodic(stepDuration, (timer) {
+      step++;
+      final t = _easeInOut(step / totalSteps);
+      final interpolated = _interpolatePosition(
+        _currentMarkerPosition!,
+        target,
+        t,
+      );
+
+      setState(() {
+        _animatedMarker = Marker(
+          markerId: MarkerId(widget.carId),
+          position: interpolated,
+          infoWindow: InfoWindow(title: "Car", snippet: "ID: ${widget.carId}"),
+          icon: BitmapDescriptor.defaultMarkerWithHue(
+            BitmapDescriptor.hueGreen,
+          ),
+        );
+      });
+
+      if (step >= totalSteps) {
+        _currentMarkerPosition = target;
+        timer.cancel();
+      }
+    });
   }
 
   @override
@@ -39,9 +97,11 @@ class _CarDetailScreenState extends ConsumerState<CarDetailScreen> {
       carProvider.notifier.select((notifier) => notifier.isTracking(car.id)),
     );
 
-    // Animate camera whenever car location changes
+    // Animate camera and marker whenever car location changes
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _animateToCar(LatLng(car.latitude, car.longitude));
+      final newPosition = LatLng(car.latitude, car.longitude);
+      _animateToCar(newPosition);
+      _animateMarkerTo(newPosition);
     });
 
     return Scaffold(
@@ -57,19 +117,22 @@ class _CarDetailScreenState extends ConsumerState<CarDetailScreen> {
               _mapController = controller;
             },
             markers: {
-              Marker(
-                markerId: MarkerId(car.id),
-                position: LatLng(car.latitude, car.longitude),
-                infoWindow: InfoWindow(
-                  title: car.name,
-                  snippet: 'ID: ${car.id}',
+              if (_animatedMarker != null)
+                _animatedMarker!
+              else
+                Marker(
+                  markerId: MarkerId(car.id),
+                  position: LatLng(car.latitude, car.longitude),
+                  infoWindow: InfoWindow(
+                    title: car.name,
+                    snippet: 'ID: ${car.id}',
+                  ),
+                  icon: BitmapDescriptor.defaultMarkerWithHue(
+                    car.status == 'Moving'
+                        ? BitmapDescriptor.hueGreen
+                        : BitmapDescriptor.hueRed,
+                  ),
                 ),
-                icon: BitmapDescriptor.defaultMarkerWithHue(
-                  car.status == 'Moving'
-                      ? BitmapDescriptor.hueGreen
-                      : BitmapDescriptor.hueRed,
-                ),
-              ),
             },
             polylines: {
               if (car.route.length > 1)
@@ -125,8 +188,7 @@ class _CarDetailScreenState extends ConsumerState<CarDetailScreen> {
                       isTracking ? "Stop Tracking" : "Track This Car",
                     ),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor:
-                          isTracking ? Colors.red : Colors.white,
+                      backgroundColor: isTracking ? Colors.red : Colors.white,
                       padding: const EdgeInsets.symmetric(
                         horizontal: 24,
                         vertical: 12,
