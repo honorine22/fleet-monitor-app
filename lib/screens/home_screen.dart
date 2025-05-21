@@ -7,6 +7,8 @@ import '../models/car_model.dart';
 import '../providers/car_provider.dart';
 import 'car_detail_screen.dart';
 
+enum CarFilter { all, moving, parked }
+
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
 
@@ -18,6 +20,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   GoogleMapController? _mapController;
 
   String _searchQuery = '';
+  CarFilter _selectedFilter = CarFilter.all;
 
   @override
   void initState() {
@@ -32,6 +35,41 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   void dispose() {
     _mapController?.dispose();
     super.dispose();
+  }
+
+  // Filters cars by search query and status filter
+  List<CarModel> _filterCars(List<CarModel> cars) {
+    var filtered = cars;
+
+    if (_searchQuery.isNotEmpty) {
+      filtered =
+          filtered
+              .where(
+                (car) =>
+                    car.name.toLowerCase().contains(_searchQuery.toLowerCase()),
+              )
+              .toList();
+    }
+
+    switch (_selectedFilter) {
+      case CarFilter.moving:
+        filtered =
+            filtered
+                .where((car) => car.status.toLowerCase() == 'moving')
+                .toList();
+        break;
+      case CarFilter.parked:
+        filtered =
+            filtered
+                .where((car) => car.status.toLowerCase() == 'parked')
+                .toList();
+        break;
+      case CarFilter.all:
+      default:
+        // No filter applied
+        break;
+    }
+    return filtered;
   }
 
   Future<void> _fitBoundsToCars(List<CarModel> cars) async {
@@ -61,18 +99,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     } catch (e) {
       // Ignore errors if map not ready yet
     }
-  }
-
-  // Filter cars by name (case-insensitive)
-  List<CarModel> _filterCars(List<CarModel> cars) {
-    if (_searchQuery.isEmpty) {
-      return cars;
-    }
-    return cars
-        .where(
-          (car) => car.name.toLowerCase().contains(_searchQuery.toLowerCase()),
-        )
-        .toList();
   }
 
   @override
@@ -109,21 +135,44 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       setState(() {
                         _searchQuery = value.trim();
                       });
-                      // Optionally fit bounds on search change:
                       _fitBoundsToCars(_filterCars(cars));
                     },
                   ),
                 ),
                 const SizedBox(width: 8),
-                // Example filter button placeholder
                 IconButton(
                   icon: const Icon(Icons.filter_list),
-                  tooltip: 'Filter (not implemented)',
-                  onPressed: () {
-                    // You can add your filter dialog or options here later
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Filter button tapped')),
+                  tooltip: 'Filter cars',
+                  onPressed: () async {
+                    final selected = await showModalBottomSheet<CarFilter>(
+                      context: context,
+                      builder: (context) {
+                        return Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children:
+                              CarFilter.values.map((filter) {
+                                return RadioListTile<CarFilter>(
+                                  title: Text(
+                                    filter.name[0].toUpperCase() +
+                                        filter.name.substring(1),
+                                  ),
+                                  value: filter,
+                                  groupValue: _selectedFilter,
+                                  onChanged: (value) {
+                                    Navigator.pop(context, value);
+                                  },
+                                );
+                              }).toList(),
+                        );
+                      },
                     );
+
+                    if (selected != null && selected != _selectedFilter) {
+                      setState(() {
+                        _selectedFilter = selected;
+                      });
+                      _fitBoundsToCars(_filterCars(ref.read(carProvider)));
+                    }
                   },
                 ),
               ],
@@ -138,7 +187,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         ),
         onMapCreated: (controller) async {
           _mapController = controller;
-          // Fit bounds once map is ready and cars are loaded
           await _fitBoundsToCars(filteredCars);
         },
         markers:
