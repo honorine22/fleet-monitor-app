@@ -28,6 +28,27 @@ class CarNotifier extends StateNotifier<List<CarModel>> {
     _startPolling();
   }
 
+  final carListStreamProvider = StreamProvider<List<CarModel>>((ref) async* {
+    while (true) {
+      try {
+        final response = await http.get(
+          Uri.parse(AppConstants.mockApiEndpoint),
+        );
+        if (response.statusCode == 200) {
+          final List data = jsonDecode(response.body);
+          final cars =
+              data.map((e) => CarModel.fromJson(e)).toList().cast<CarModel>();
+          yield cars;
+        } else {
+          yield [];
+        }
+      } catch (e) {
+        yield [];
+      }
+      await Future.delayed(Duration(seconds: 5)); // polling every 5s
+    }
+  });
+
   Future<void> _fetchCars() async {
     try {
       final response = await http.get(Uri.parse(AppConstants.mockApiEndpoint));

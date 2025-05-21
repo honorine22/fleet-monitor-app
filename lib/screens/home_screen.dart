@@ -91,6 +91,65 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               _fitBoundsToCars(filteredCars);
             },
           ),
+
+          // Floating Search Bar
+          Positioned(
+            top: 16,
+            left: 16,
+            right: 16,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: const [
+                  BoxShadow(blurRadius: 5, color: Colors.black26),
+                ],
+              ),
+              child: TextField(
+                decoration: const InputDecoration(
+                  icon: Icon(Icons.search),
+                  hintText: 'Search cars...',
+                  border: InputBorder.none,
+                ),
+                onChanged: (value) {
+                  ref.read(searchQueryProvider.notifier).state = value;
+                },
+              ),
+            ),
+          ),
+
+          // Filter Dropdown
+          Positioned(
+            top: 80,
+            right: 16,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: const [
+                  BoxShadow(blurRadius: 5, color: Colors.black26),
+                ],
+              ),
+              child: DropdownButton<CarFilter>(
+                value: filter,
+                underline: const SizedBox.shrink(),
+                onChanged: (value) {
+                  if (value != null) {
+                    ref.read(carFilterProvider.notifier).state = value;
+                  }
+                },
+                items:
+                    CarFilter.values.map((CarFilter filter) {
+                      return DropdownMenuItem<CarFilter>(
+                        value: filter,
+                        child: Text(filter.name.toUpperCase()),
+                      );
+                    }).toList(),
+              ),
+            ),
+          ),
         ],
       ),
     );
@@ -106,7 +165,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         searchQuery.toLowerCase(),
       );
 
-      // Use CarFilter enum directly to check status
       final matchesStatus = switch (filter) {
         CarFilter.all => true,
         CarFilter.moving => car.status.toLowerCase() == 'moving',
