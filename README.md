@@ -15,6 +15,7 @@ A real-time fleet monitoring mobile app built with **Flutter**, **Google Maps**,
 ![Detail View](WhatsApp%20Video%202025-05-22%20at%2000.41.36_4aa82dab-1.jpg)
 
 ### Tracking Car  
+![Tracking1](WhatsApp%20Video%202025-05-22%20at%2000.41.36_4aa82dab-4.jpg)
 ![Tracking](WhatsApp%20Video%202025-05-22%20at%2000.41.36_4aa82dab-2.jpg)
 
 ---
@@ -30,54 +31,23 @@ A real-time fleet monitoring mobile app built with **Flutter**, **Google Maps**,
 
 ---
 
-## 🛠️ Getting Started
+## 🚀 Getting Started
 
-### Prerequisites
-
-- [Flutter](https://flutter.dev/docs/get-started/install)
-- Internet connection (uses HTTP API)
-- Google Maps API Key
-
-### Installation
-
-```bash
+### 1. Clone the Repository
 git clone https://github.com/honorine22/fleet-monitor-app.git
 cd fleet-monitor-app
 flutter pub get
 
-## 🛠️ Setup
+# 🛠️ Setup Instructions
 
-### Replace the base URL in your API service file with:
-
-```dart
+## 1. Replace the base URL in your API service file with:
 const baseUrl = 'https://682b6827d29df7a95be34818.mockapi.io/api/v1';
-Add your Google Maps API key in android/app/src/main/AndroidManifest.xml:
-xml
-Copy
-Edit
+
+# 2. Add your Google Maps API key in android/app/src/main/AndroidManifest.xml:
 <meta-data
   android:name="com.google.android.geo.API_KEY"
   android:value="YOUR_GOOGLE_MAPS_API_KEY"/>
-▶️ Run the App
-bash
-Copy
-Edit
+  
+# ▶️ Run the App
 flutter pub get
 flutter run
-📁 Folder Structure
-bash
-Copy
-Edit
-lib/
-├── models/        # Car model and API parsing
-├── providers/     # Riverpod state management
-├── screens/       # UI screens (home, detail)
-├── services/      # API calls using MockAPI
-├── widgets/       # Reusable UI components
-🤝 Contributing
-Feedback and contributions are welcome.
-Feel free to fork the repository and open a pull request.
-
-vbnet
-Copy
-Edit
